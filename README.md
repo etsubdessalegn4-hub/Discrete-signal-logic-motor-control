@@ -10,17 +10,15 @@ An analog control system that decides, from an AC input signal, when and how to 
 - Drives the motor through a transistor and a DPDT relay wired as an H-bridge, so the rotation direction reverses.
 - A normally-closed push button in the motor's power path stops the motor.
 
-## Custom relay footprint
+## Full schematic
 
-The DPDT relay had no footprint in the library, so I drew one: an 8-pad footprint with 40 mil drill holes to fit the thicker relay pins (`altium/PcbLib1_footprint_Motor.PcbLib`).
-
-![Relay footprint](docs/relay-footprint.jpg)
+![Full schematic](docs/full-schematic.jpg)
 
 ## Files
 
 ```
-altium/PcbLib1_footprint_Motor.PcbLib   custom DPDT relay footprint
-docs/                                   footprint image
+altium/Sheet1_Motor.SchDoc   schematic
+docs/                        schematic image
 ```
 
 ## Tech
