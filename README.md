@@ -14,11 +14,72 @@ An analog control system that decides, from an AC input signal, when and how to 
 
 ![Full schematic](docs/full-schematic.jpg)
 
+## Block breakdown
+
+All stages use MMBT2222A NPN transistors on a single 15 V DC supply.
+
+### 1. Amplification and phase displacement
+
+Three reference signals are generated from the input:
+
+- **Amplifier 1 (Q47):** common-emitter stage, gain of about 1 and 180° inversion.
+- **Amplifier 2 (Q45):** emitter follower, a high-impedance buffer with 0° shift. It feeds the VCIS and differential stages.
+- **60° phase shifter:** an RC lead network (R173 and C42) after a buffer stage.
+
+![Amplification and phase shifter](docs/phase-shifter.jpg)
+
+### 2. Differential comparison
+
+A BJT differential pair (Q50 and Q49) with a 1 kΩ common tail resistor (R180) subtracts the non-inverted signal and the 60° shifted signal. The collector of Q50 gives Vdiff.
+
+![Differential pair](docs/differential-pair.jpg)
+
+### 3. Magnitude sensing (Motor 1 logic)
+
+Raw AC cannot be compared directly without relay chatter, so peak detectors (D13 with C47, and D14 with C48) turn the AC peaks into stable DC levels. A second differential pair (Q51 and Q52) compares them:
+
+- |Vamp1| < |Vdiff|: Q51 cuts off and its collector goes HIGH.
+- |Vamp1| > |Vdiff|: Q51 saturates and its collector goes LOW.
+
+![Magnitude sensing](docs/m1-decision-logic.jpg)
+
+### 4. Voltage-controlled current source (Motor 2)
+
+An NPN transistor (Q56) in a current-source topology turns the output of Amplifier 2 into a current. The emitter resistor R212 sets the transconductance.
+
+![VCIS](docs/vcis.jpg)
+
+### 5. Current-threshold comparison (Motor 2 logic)
+
+Motor 2 should trigger when I_VCIS ≥ 2 × I_amp2. With discrete parts this is done by sense-resistor scaling: I_VCIS passes through a 1 kΩ resistor and the reference through a 2 kΩ resistor (R145), so the two voltages match only when I_VCIS is double the reference. A transistor comparator (Q54 and Q55) senses them, and when Vsense1 ≥ Vsense2 the motor is triggered to rotate left.
+
+![Current comparison](docs/m2-current-comparison.jpg)
+
+### 6. Power driver
+
+- **Transistor driver:** Q57 is a low-side switch. Its base is driven through a 1 kΩ resistor (R211) and it saturates at about 0.7 V, connecting the relay coil to ground.
+- **DPDT relay H-bridge:** with a separate 15 V supply, the relay in its rest state gives the motor "right" polarity. When Q57 energizes the coil, the contacts flip and the current through the motor reverses ("left").
+- **Stop button:** a normally-closed push button in the motor's power path interrupts the high-current path and stops the motor.
+
+![Power driver](docs/power-driver.jpg)
+
+## Design calculations
+
+**Phase shifter.** For a lead network, φ = arctan(1 / (ωRC)). For 60° at 1 kHz, RC = 1 / (2π × 1000 × tan 60°) ≈ 9.19 × 10⁻⁵ s. The build uses R ≈ 1.1 kΩ and C = 100 nF, which gives about 55°, close to the 60° target. An exact 60° would need R ≈ 919 Ω with the same capacitor.
+
+**VCIS.** I_VCIS = (Vamp2 − VBE) / R_emitter.
+
+**Motor 1 logic.** |Vamp1| compared with |Vdiff| sets the motor direction.
+
+**Motor 2 logic.** I_VCIS ≥ 2 × I_amp2, tested as V1 = I_VCIS × R against V2 = I_amp2 × 2R.
+
+**Switching.** The relay driver turns on when V_BE ≥ 0.7 V and the transistor saturates.
+
 ## Files
 
 ```
 altium/Sheet1_Motor.SchDoc   schematic
-docs/                        schematic image
+docs/                        full schematic and block images
 ```
 
 ## Tech
