@@ -75,12 +75,26 @@ Motor 2 should trigger when I_VCIS ≥ 2 × I_amp2. With discrete parts this is 
 
 **Switching.** The relay driver turns on when V_BE ≥ 0.7 V and the transistor saturates.
 
+## Lessons learned
+
+- **AC into the drivers does not work.** Feeding the raw AC from the differential amplifier straight into the driver transistors gave errors. A half-wave peak detector (diode and capacitor) converting it to DC fixed it.
+- **Clipping from low headroom.** With a 5 V supply the bias points sat around 4.5 V, leaving only 0.5 V of headroom, so larger signals were clipped at the rail. Raising the supply to 15 V solved it.
+- **Logic levels sag.** Voltage drops were fixed with active pull-up networks.
+- **The Altium motor model does not spin.** In simulation the motor model does not visibly rotate, so I added a voltage probe on the motor output to see which polarity, and therefore which direction, was being driven.
+
+## Conclusion
+
+The project shows that this kind of analog control logic, comparing signals, thresholding a current and reversing a motor, can be built from basic discrete components with no integrated circuits.
+
 ## Files
 
 ```
-altium/Sheet1_Motor.SchDoc   schematic
-docs/                        full schematic and block images
+altium/PCB_Project_Motor.PrjPcb   Altium project
+altium/Sheet1_Motor.SchDoc        schematic
+docs/                             full schematic and block images
 ```
+
+Open `Sheet1_Motor.SchDoc` directly in Altium Designer if the project file reports missing sheets.
 
 ## Tech
 
